@@ -1,0 +1,54 @@
+name: track
+
+on:
+  schedule:
+    # Every 15 minutes. GitHub queues scheduled runs on a best-effort basis and
+    # delays of 10-30 minutes are normal under load, so treat this as "roughly
+    # four times an hour", not a precise interval.
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+# Runs commit to the repo, so never let two overlap.
+concurrency:
+  group: track
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Collect prices
+        env:
+          STORAGE: ndjson
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: node src/index.js --once
+
+      - name: Commit data
+        run: |
+          git config user.name  'skin-tracker'
+          git config user.email 'actions@github.com'
+          git add data/
+          if git diff --staged --quiet; then
+            echo 'Нет новых данных — коммит не нужен.'
+            exit 0
+          fi
+          git commit -m "data: $(date -u '+%Y-%m-%d %H:%M') UTC"
+          # Another run may have pushed while this one was collecting.
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && \
+            git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            echo "push attempt $i failed, retrying"
+            sleep 5
+          done
+          exit 1

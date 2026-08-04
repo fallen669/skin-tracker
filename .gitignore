@@ -1,0 +1,8 @@
+node_modules/
+.env
+
+# Локальная база — собирается из NDJSON через `npm run import`.
+# Сами NDJSON коммитятся: это и есть накопленные данные.
+data/skins.db
+data/skins.db-wal
+data/skins.db-shm

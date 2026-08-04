@@ -1,0 +1,3 @@
+# Workflow-скрипты выполняются на Linux — CRLF там ломает shell.
+* text=auto eol=lf
+*.ndjson -text

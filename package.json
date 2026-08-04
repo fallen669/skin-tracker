@@ -1,0 +1,16 @@
+{
+  "name": "skin-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Price tracker and spread analyzer for CS2 skins across Skinport, Waxpeer and Steam Market",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "once": "node src/index.js --once",
+    "import": "node src/import.js",
+    "report": "node src/report.js"
+  }
+}
